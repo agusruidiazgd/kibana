@@ -338,5 +338,30 @@ describe('useApplyAttackWorkflowStatus', () => {
       });
       expect(mockMutateAsync).not.toHaveBeenCalled();
     });
+
+    it('should call attacks API with reason when status is FILTER_CLOSED', async () => {
+      mockShowModal.mockResolvedValue({ updateAlerts: false });
+      mockAttacksMutateAsync.mockResolvedValue({ updated: 1 });
+
+      const { result } = renderHook(() => useApplyAttackWorkflowStatus(), { wrapper });
+      const reason = 'false_positive' as const;
+
+      await act(async () => {
+        await result.current.applyWorkflowStatus({
+          status: FILTER_CLOSED as AlertWorkflowStatus,
+          attackIds: ['attack-1'],
+          relatedAlertIds: [],
+          reason,
+        });
+      });
+
+      expect(mockAttacksMutateAsync).toHaveBeenCalledWith({
+        ids: ['attack-1'],
+        status: FILTER_CLOSED,
+        update_related_alerts: false,
+        reason,
+      });
+      expect(mockMutateAsync).not.toHaveBeenCalled();
+    });
   });
 });
